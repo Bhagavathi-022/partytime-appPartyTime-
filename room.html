@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PartyTime - Watch Room</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="/theme.js"></script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; font-size: 20px; line-height: 1; display: inline-block; vertical-align: middle; }
+  @keyframes float-reaction { 0% { transform: translateY(0) scale(.85); opacity: 0; } 15% { opacity: 1; } 80% { opacity: .9; } 100% { transform: translateY(-220px) scale(1.15); opacity: 0; } }
+  .float-emoji { position: absolute; bottom: 24px; animation: float-reaction 2.8s ease-out forwards; pointer-events: none; }
+  .speaking { box-shadow: 0 0 0 3px rgba(76,219,202,.75); }
+  :focus-visible { outline: 2px solid #4cdbca; outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } .float-emoji { animation: none; opacity: 0; } }
+</style>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased min-h-screen flex flex-col lg:h-screen lg:overflow-hidden">
+
+<header class="w-full min-h-16 px-4 sm:px-gutter py-2 flex flex-wrap items-center justify-between gap-2 bg-surface-container-lowest/80 backdrop-blur-md z-50 shrink-0 border-b border-outline-variant/30">
+  <div class="flex items-center gap-space-md min-w-0">
+    <a class="font-headline-sm text-headline-sm font-extrabold text-on-surface flex items-center gap-space-xs tracking-tight group shrink-0" href="/">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-surface-container-lowest shadow-[0_0_15px_rgba(139,124,255,0.4)]"><span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">movie</span></div>
+      <span class="hidden sm:inline group-hover:text-primary transition-colors">PartyTime</span>
+    </a>
+    <div class="h-5 w-[1px] bg-outline-variant/40 hidden sm:block"></div>
+    <h1 id="room-name" class="font-headline-sm text-headline-sm text-on-surface truncate max-w-[220px] sm:max-w-[340px]">Joining…</h1>
+    <span id="host-chip" class="hidden sm:inline-flex items-center gap-space-xs px-2 py-0.5 rounded-full bg-surface-container-high border border-outline-variant/40 font-metric-badge text-metric-badge text-secondary"></span>
+  </div>
+  <div class="flex items-center gap-space-sm">
+    <div id="conn" class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-low border border-outline-variant/30 font-metric-badge text-metric-badge text-on-surface-variant"><span class="w-2 h-2 rounded-full bg-outline"></span><span>Connecting…</span></div>
+    <span id="code-chip" class="font-metric-badge text-metric-badge tracking-widest px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant/40 text-on-surface"></span>
+    <button id="invite" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant/40 font-label-action text-label-action text-on-surface hover:border-primary hover:bg-surface-container-high transition-all"><span class="material-symbols-outlined !text-[16px] text-primary">link</span><span>Copy invite link</span></button>
+    <button id="leave" class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-error-container/40 border border-error/30 hover:bg-error-container text-error font-label-action text-label-action transition-all"><span class="material-symbols-outlined !text-[16px]">logout</span><span>Leave</span></button>
+  </div>
+</header>
+<div id="banner" class="hidden px-4 py-1.5 bg-[#3a2a0a] text-[#f5b85b] font-metric-badge text-metric-badge text-center"></div>
+
+<main class="flex-1 flex flex-col lg:flex-row lg:overflow-hidden w-full relative">
+  <section class="flex-1 min-w-0 relative lg:overflow-y-auto bg-surface-container-lowest">
+    <div id="stage" class="p-4 sm:p-6 flex flex-col gap-4 max-w-4xl mx-auto"><p class="text-on-surface-variant">Joining the room…</p></div>
+    <div id="floaters" class="absolute inset-x-0 bottom-0 h-0 pointer-events-none"></div>
+  </section>
+
+  <aside class="w-full lg:w-[380px] bg-surface-container-low border-t lg:border-t-0 lg:border-l border-outline-variant/30 flex flex-col lg:h-full shrink-0 z-40">
+    <div class="flex items-center border-b border-outline-variant/30 px-3 pt-2 bg-surface-container-lowest" role="tablist">
+      <button data-tab="chat" role="tab" class="flex-1 pb-3 text-center font-label-action text-label-action flex items-center justify-center gap-1.5 transition-colors"><span class="material-symbols-outlined !text-[16px]">chat</span><span>Live Chat</span><span id="unread" class="hidden w-1.5 h-1.5 rounded-full bg-secondary"></span></button>
+      <button data-tab="queue" role="tab" class="flex-1 pb-3 text-center font-label-action text-label-action flex items-center justify-center gap-1.5 transition-colors"><span class="material-symbols-outlined !text-[16px]">playlist_play</span><span>Queue</span><span id="qcount" class="hidden px-1.5 rounded-full bg-primary/20 text-primary font-metric-badge text-[10px]"></span></button>
+    </div>
+
+    <div class="p-3 bg-surface-container border-b border-outline-variant/30 flex flex-col gap-2.5">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-1.5 min-w-0"><span class="font-metric-badge text-metric-badge text-secondary uppercase font-semibold">Voice Channel</span><span id="voice-state" class="text-[11px] font-metric-badge text-on-surface-variant truncate">Off</span></div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button id="mute" class="hidden p-1.5 rounded-lg bg-surface-container-high text-on-surface-variant hover:text-on-surface" title="Mute microphone" aria-label="Mute microphone"><span class="material-symbols-outlined !text-[18px]">mic</span></button>
+          <button id="voice" class="px-3 py-1 rounded-lg bg-secondary/15 hover:bg-secondary text-secondary hover:text-[#0B0D12] font-label-action text-label-action transition-all flex items-center gap-1"><span class="material-symbols-outlined !text-[16px]">headset_mic</span><span>Join voice</span></button>
+        </div>
+      </div>
+      <div id="people" class="flex items-start gap-3 overflow-x-auto py-1"></div>
+    </div>
+
+    <div id="pane-chat" class="flex flex-col flex-1 min-h-0">
+      <div id="chat" class="flex-1 overflow-y-auto p-4 space-y-3.5 min-h-[220px] max-h-[50vh] lg:max-h-none scroll-smooth"></div>
+      <div id="reacts" class="px-3 py-2 bg-surface-container border-t border-outline-variant/20 flex items-center justify-between gap-1"></div>
+      <form id="send" class="p-3 bg-surface-container-lowest border-t border-outline-variant/30">
+        <div class="flex items-center gap-1.5 bg-surface-container-low border border-outline-variant/40 rounded-xl px-3 py-2 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+          <input id="msg" maxlength="500" autocomplete="off" aria-label="Message" class="flex-1 bg-transparent border-0 p-0 text-on-surface placeholder:text-outline focus:ring-0 font-body-sm text-body-sm" placeholder="Send a message…"/>
+          <button class="w-7 h-7 rounded-lg bg-primary text-surface-container-lowest flex items-center justify-center hover:bg-primary-fixed transition-colors" title="Send" aria-label="Send"><span class="material-symbols-outlined !text-[16px]" style="font-variation-settings: 'FILL' 1;">send</span></button>
+        </div>
+      </form>
+    </div>
+    <div id="pane-queue" class="hidden flex-col flex-1 min-h-0">
+      <div id="queue" class="flex-1 overflow-y-auto p-4 space-y-3 min-h-[220px]"></div>
+      <div class="p-3 border-t border-outline-variant/30"><button id="suggest" class="w-full px-3 py-2 rounded-xl bg-surface-container-high hover:bg-primary hover:text-[#0B0D12] text-white font-label-action border border-[#2A3140] transition-all flex items-center justify-center gap-1"><span class="material-symbols-outlined !text-[16px]">add</span><span>Suggest a title</span></button></div>
+    </div>
+  </aside>
+</main>
+
+<script src="/app.js"></script>
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = PT.esc, ic = PT.ic;
+const code = (new URLSearchParams(location.search).get("code") || "").toUpperCase();
+if (!/^[A-Z2-9]{6}$/.test(code)) location.replace("/");
+
+let ws = null, room = null, you = null, offset = 0, tab = "chat", closedByUs = false, retry = 0, myServices = PT.getServices() || [];
+const send = (o) => { if (ws && ws.readyState === 1) ws.send(JSON.stringify(o)); };
+const statePos = () => { const s = room.state; return Math.max(0, s.playing ? s.position + (Date.now() + offset - s.at) / 1000 : s.position); };
+const me = () => room && room.members.find((m) => m.pid === you.pid);
+
+/* ---------- fatal + name ---------- */
+function fatal(msg) {
+  closedByUs = true; if (ws) ws.close(); voiceStop(true);
+  PT.modal(`<div class="p-6 flex flex-col gap-4"><h3 class="font-headline-sm text-headline-sm text-white">Can't open this room</h3><p class="text-on-surface-variant">${esc(msg)}</p><a href="/" class="px-4 py-2 rounded-xl bg-primary text-[#0B0D12] font-bold text-center">Back to PartyTime</a></div>`, { sticky: true });
+}
+function askName(then) {
+  const m = PT.modal(`<form id="nm" class="p-6 flex flex-col gap-4"><h3 class="font-headline-sm text-headline-sm text-white">Join room ${esc(code)}</h3><p class="text-sm text-on-surface-variant">What should everyone call you?</p>
+    <input id="nm-in" autofocus maxlength="30" required class="bg-[#11151D] border border-[#2A3140] rounded-xl px-3 py-2 text-white focus:border-primary focus:outline-none" value="${esc(PT.getName())}" placeholder="Your name" aria-label="Your name"/>
+    <button class="px-4 py-2 rounded-xl bg-primary text-[#0B0D12] font-bold">Join room</button></form>`, { sticky: true });
+  m.querySelector("#nm").onsubmit = (e) => { e.preventDefault(); const v = m.querySelector("#nm-in").value.trim(); if (!v) return; PT.setName(v); PT.closeModal(); then(); };
+}
+
+/* ---------- connection ---------- */
+function setConn(ok, text) {
+  $("#conn").innerHTML = `<span class="w-2 h-2 rounded-full ${ok ? "bg-tertiary" : "bg-[#f5b85b]"}"></span><span>${esc(text)}</span>`;
+  $("#banner").classList.toggle("hidden", ok); $("#banner").textContent = ok ? "" : "Connection lost. Trying to reconnect…";
+}
+function connect() {
+  const proto = location.protocol === "https:" ? "wss:" : "ws:";
+  ws = new WebSocket(`${proto}//${location.host}/ws?code=${code}&client=${PT.clientId}&name=${encodeURIComponent(PT.getName())}`);
+  ws.onmessage = (e) => { try { handle(JSON.parse(e.data)); } catch (err) { console.error(err); } };
+  ws.onclose = (ev) => {
+    if (closedByUs) return;
+    if (ev.code === 4004) return fatal("Room not found. It may have ended, or the code is wrong.");
+    if (ev.code === 4003) return fatal("This room is full.");
+    setConn(false, "Reconnecting…"); setTimeout(connect, Math.min(1000 * 2 ** retry++, 8000));
+  };
+}
+
+function handle(m) {
+  switch (m.t) {
+    case "init":
+      room = m.room; you = m.you; offset = m.serverNow - Date.now(); retry = 0;
+      renderAll();
+      { const saved = PT.getServices(); if (saved) send({ t: "services", services: saved }); }
+      if (voice.on) send({ t: "voice", on: true });
+      break;
+    case "room": room = m.room; offset = m.serverNow - Date.now(); renderAll(); break;
+    case "plan": room.members = m.members; room.plan = m.plan; room.session = m.session; renderHeader(); renderStage(); renderPeople(); voiceSync(); break;
+    case "state": room.state = m.state; offset = m.serverNow - Date.now(); ytApply(); if (room.session && !room.media) renderStage(); tick(); break;
+    case "chat": room.chat.push(m.m); addChat(m.m); if (tab !== "chat") $("#unread").classList.remove("hidden"); break;
+    case "react": floatEmoji(m.emoji); break;
+    case "queue": room.queue = m.queue; room.requests = m.requests; renderQueue(); break;
+    case "rtc": onSignal(m.from, m.data); break;
+    case "error": PT.toast(m.message); break;
+  }
+}
+
+/* ---------- header + people ---------- */
+function renderHeader() {
+  document.title = room.name + " - PartyTime";
+  $("#room-name").textContent = room.name;
+  $("#code-chip").textContent = room.code;
+  $("#host-chip").innerHTML = `${ic("crown", "!text-[14px]")} Host: ${esc(room.hostName)}`;
+  setConn(true, `Connected · ${room.members.length} here`);
+}
+function renderPeople() {
+  $("#people").innerHTML = room.members.map((m) => `<div class="flex flex-col items-center gap-1 shrink-0" title="${esc(m.name)}">
+    <div data-pid="${m.pid}" class="relative w-10 h-10 rounded-full bg-surface-container-highest ring-1 ${m.host ? "ring-secondary" : "ring-outline-variant/40"} flex items-center justify-center font-metric-badge text-[12px] text-white transition-shadow">${esc(PT.initials(m.name))}
+      ${m.voice ? `<span class="absolute -bottom-1 -right-1 bg-primary text-surface-container-lowest rounded-full p-0.5">${ic("mic", "!text-[12px]")}</span>` : ""}
+      ${m.host ? `<span class="absolute -top-1 -right-1 bg-surface-container-lowest rounded-full p-0.5 text-secondary">${ic("crown", "!text-[12px]")}</span>` : ""}
+      ${m.ready ? `<span class="absolute -top-1 -left-1 bg-tertiary text-surface-container-lowest rounded-full p-0.5">${ic("check", "!text-[12px]")}</span>` : ""}</div>
+    <span class="text-[10px] font-metric-badge ${m.pid === you.pid ? "text-tertiary" : "text-on-surface-variant"} truncate max-w-[56px]">${m.pid === you.pid ? "You" : esc(m.name)}</span></div>`).join("");
+}
+
+/* ---------- stage ---------- */
+let ytId = null;
+function renderAll() { renderHeader(); renderPeople(); renderStage(); renderChatAll(); renderQueue(); renderTabs(); }
+
+function titleHeader(t) {
+  return `<div class="flex gap-4 items-start"><div class="w-28 sm:w-36 shrink-0 aspect-[2/3] rounded-xl overflow-hidden border border-[#2A3140]">${PT.poster(t)}</div>
+    <div class="min-w-0 flex flex-col gap-1"><p class="font-metric-badge text-[11px] uppercase tracking-wider text-secondary">Tonight's pick</p>
+    <h2 class="font-display-hero text-[28px] sm:text-[40px] font-extrabold text-white leading-tight">${esc(t.title)}</h2><p class="font-body-md text-on-surface-variant">${t.year || ""}</p>
+    ${you.host ? `<div class="flex flex-wrap gap-2 mt-2"><button data-act="pick" class="px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant/40 hover:border-primary text-white font-label-action text-[12px] flex items-center gap-1">${ic("swap_horiz", "!text-[16px]")}Change title</button></div>` : ""}</div></div>`;
+}
+const chip = (p) => `<span class="inline-flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-surface-container border border-outline-variant/30 font-body-sm text-white">${PT.safeImg(p.logo) ? `<img src="${esc(PT.safeImg(p.logo))}" alt="" class="w-6 h-6 rounded-full">` : '<span class="w-6 h-6 rounded-full bg-surface-container-high"></span>'}${esc(p.name)}</span>`;
+const box = (cls, inner) => `<div class="p-4 sm:p-5 rounded-2xl border ${cls} flex flex-col gap-3">${inner}</div>`;
+const btn = (act, label, cls) => `<button data-act="${act}" class="px-5 py-2.5 rounded-xl font-label-action font-bold ${cls || "bg-primary text-[#0B0D12] hover:bg-primary-fixed"}">${label}</button>`;
+
+function servicesPicker(options) {
+  const names = [...new Map(options.map((p) => [p.name.toLowerCase(), p])).values()];
+  const mine = me(), undeclared = mine && !mine.declared;
+  return `<div class="p-4 rounded-2xl bg-surface-container border border-outline-variant/30"><h3 class="font-headline-sm text-[16px] text-white">Which of these do you have?</h3>
+    <p class="text-sm text-on-surface-variant mt-1">Tick the services you can watch on right now. Everyone's answers decide where the room goes.</p>
+    <div class="flex flex-wrap gap-2 mt-3">${names.map((p) => `<label class="inline-flex items-center gap-2 pl-3 pr-1 py-1 rounded-full border ${myServices.includes(p.name.toLowerCase()) ? "border-secondary bg-secondary/10" : "border-outline-variant/40"} cursor-pointer text-white font-body-sm"><input type="checkbox" data-svc="${esc(p.name)}" class="rounded" ${myServices.includes(p.name.toLowerCase()) ? "checked" : ""}/>${esc(p.name)}${PT.safeImg(p.logo) ? `<img src="${esc(PT.safeImg(p.logo))}" alt="" class="w-6 h-6 rounded-full">` : ""}</label>`).join("")}</div>
+    ${undeclared ? `<button data-act="none" class="mt-3 px-3 py-1.5 rounded-lg border border-outline-variant/40 text-on-surface-variant hover:text-white text-sm">I don't have any of these</button>` : ""}</div>`;
+}
+
+function statusHtml() {
+  const p = room.plan, t = room.title, host = you.host, cn = esc(PT.countryName(room.country));
+  const wait = (txt) => `<p class="text-sm text-on-surface-variant">${txt}</p>`;
+  switch (p.status) {
+    case "checking": return box("border-outline-variant/30 bg-surface-container", `<p class="text-on-surface">Checking where <b>${esc(t.title)}</b> is streaming in ${cn}…</p>`);
+    case "unknown": return box("border-outline-variant/30 bg-surface-container", `<h3 class="font-headline-sm text-white">Can't check where this streams</h3><p class="text-on-surface-variant">This server isn't set up to look up streaming services (it needs a TMDB API key). The person running PartyTime can add one.</p>`);
+    case "error": return box("border-error/30 bg-error-container/20", `<h3 class="font-headline-sm text-white">Couldn't check streaming services</h3><p class="text-on-surface-variant">${esc(p.message)}</p>`);
+    case "unavailable": return box("border-[#f5b85b]/40 bg-[#f5b85b]/10", `<h3 class="font-headline-sm text-white">${esc(t.title)} isn't streaming anywhere in ${cn}</h3>
+      <p class="text-on-surface-variant">We couldn't find it on any streaming, rental or purchase service in ${cn}. It might be in cinemas, only on disc, or not licensed here yet. ${host ? "Pick another title, or ask everyone to change the room's country." : "Ask the host to pick another title."}</p>${host ? `<div>${btn("pick", "Pick another title")}</div>` : ""}`);
+    case "waiting": return servicesPicker(p.options) + box("border-outline-variant/30 bg-surface-container", wait(`Waiting for <b class="text-white">${p.names.map(esc).join(", ")}</b> to choose their streaming services.`));
+    case "missing": return servicesPicker(p.options) + box("border-[#f5b85b]/40 bg-[#f5b85b]/10", `<h3 class="font-headline-sm text-white">Not everyone can watch this together yet</h3>
+      <p class="text-on-surface-variant"><b class="text-white">${esc(p.provider.name)}</b> is the closest match, but <b class="text-white">${p.missing.map(esc).join(", ")}</b> ${p.missing.length === 1 ? "doesn't have" : "don't have"} it. PartyTime only starts when everyone has a service that carries this title.</p>
+      <div class="flex flex-wrap gap-2">${p.options.map(chip).join("")}</div>`);
+    case "free": return box("border-tertiary/40 bg-tertiary/10", `<h3 class="font-headline-sm text-white">Free to watch on ${esc(p.provider.name)}</h3><p class="text-on-surface-variant">No subscription needed. Everyone can watch this.${p.provider.youtube ? " Tip: once you find the exact video on YouTube, paste its link below to watch it right here, in sync." : ""}</p>${host ? `<div>${btn("start", "Send everyone to " + esc(p.provider.name))}</div>` : wait("Waiting for the host to start.")}`);
+    case "ready": return servicesPicker(p.options) + box("border-tertiary/40 bg-tertiary/10", `<h3 class="font-headline-sm text-white">Everyone has ${esc(p.provider.name)}</h3><p class="text-on-surface-variant">${esc(t.title)} is on ${esc(p.provider.name)}${p.provider.kinds.includes("flatrate") ? "" : " (rent or buy, which may cost extra)"}. Ready when you are.</p>${host ? `<div>${btn("start", "Send everyone to " + esc(p.provider.name))}</div>` : wait("Waiting for the host to start.")}`);
+  }
+  return "";
+}
+
+function sessionHtml() {
+  const s = room.session, t = room.title, pr = s.provider, url = PT.providerUrl(pr, t.title), host = you.host, mine = me();
+  if (s.phase === "gather") {
+    const rd = room.members.filter((m) => m.ready).length;
+    return box("border-primary/40 bg-primary/10", `<h3 class="font-headline-sm text-white">Open ${esc(pr.name)} and find ${esc(t.title)}</h3>
+      <p class="text-on-surface-variant">Get it ready to play (paused at the start), then come back here and tap <b class="text-white">I'm ready</b>. When everyone is ready, a countdown tells you when to press play.</p>
+      <div class="flex flex-wrap gap-2 items-center"><a href="${esc(url)}" target="_blank" rel="noopener noreferrer" class="px-5 py-2.5 rounded-xl bg-primary text-[#0B0D12] font-bold font-label-action flex items-center gap-1">Open ${esc(pr.name)} ${ic("open_in_new", "!text-[16px]")}</a>
+      <button data-act="ready" ${mine && mine.ready ? "disabled" : ""} class="px-5 py-2.5 rounded-xl font-label-action font-bold ${mine && mine.ready ? "bg-tertiary/20 text-tertiary" : "bg-secondary text-[#0B0D12] hover:bg-secondary-fixed"}">${mine && mine.ready ? "You're ready" : "I'm ready"}</button>
+      ${host ? `<button data-act="force" class="px-4 py-2.5 rounded-xl border border-outline-variant/40 text-on-surface-variant hover:text-white">Start countdown anyway</button>` : ""}
+      ${host ? `<button data-act="stop" class="px-4 py-2.5 rounded-xl border border-outline-variant/40 text-on-surface-variant hover:text-white">Cancel</button>` : ""}</div>
+      <p class="font-metric-badge text-[12px] text-secondary">${rd} of ${room.members.length} ready</p>`);
+  }
+  return `<div id="cd" class="p-6 sm:p-8 rounded-2xl border border-secondary/40 bg-secondary/10 text-center min-h-[200px] flex flex-col items-center justify-center gap-2"></div>
+    ${host ? `<div class="flex flex-wrap gap-2 justify-center">${room.state.playing ? btn("pause", "Pause for everyone", "bg-surface-container-high text-white border border-outline-variant/40") : btn("resume", "Resume for everyone")}${btn("stop", "End session", "border border-outline-variant/40 text-on-surface-variant hover:text-white")}</div>` : `<p class="text-center text-sm text-on-surface-variant">The host pauses and resumes for everyone. When they do, pause or resume on ${esc(pr.name)} too.</p>`}`;
+}
+
+function hostExtras() {
+  if (!you.host) return "";
+  return `<form data-yt class="p-4 rounded-2xl bg-surface-container border border-outline-variant/30 flex flex-col gap-2"><label class="text-sm text-on-surface-variant" for="yt-url">Watch a YouTube video instead (plays here, kept in sync)</label>
+    <div class="flex gap-2"><input id="yt-url" class="flex-1 min-w-0 bg-[#11151D] border border-[#2A3140] rounded-xl px-3 py-2 text-white text-sm" placeholder="https://www.youtube.com/watch?v=…"/><button class="px-4 py-2 rounded-xl bg-primary text-[#0B0D12] font-bold text-sm">Play</button></div></form>`;
+}
+
+function renderStage() {
+  const st = $("#stage");
+  if (room.media) {
+    if (ytId !== room.media.id) {
+      ytId = room.media.id;
+      st.innerHTML = `<div class="w-full aspect-video rounded-2xl overflow-hidden border border-[#2A3140] bg-black relative"><div id="yt" class="w-full h-full"></div>${you.host ? "" : `<button id="yt-unlock" class="absolute inset-0 bg-black/70 text-white font-label-action font-bold flex items-center justify-center">Tap to start synced playback</button>`}</div>
+        <p class="text-sm text-on-surface-variant">${you.host ? "You control playback. Everyone else follows you." : "The host controls playback. Your player follows automatically."}</p>
+        ${you.host ? `<div>${btn("pick", "Pick a movie or show instead", "bg-surface-container border border-outline-variant/40 text-white")}</div>` : ""}${hostExtras()}`;
+      mountYT(ytId);
+    }
+    return;
+  }
+  if (ytId) destroyYT();
+  if (!room.title) {
+    st.innerHTML = box("border-outline-variant/30 bg-surface-container", `<h2 class="font-headline-md text-headline-md text-white">${you.host ? "What are we watching?" : "Waiting for the host to pick something"}</h2>
+      <p class="text-on-surface-variant">${you.host ? "Search every movie, series and documentary. PartyTime will check that everyone has a service that carries it." : "Chat while you wait, or suggest a title in the Queue tab."}</p>${you.host ? `<div>${btn("pick", "Pick a title")}</div>` : ""}`) + hostExtras();
+    return;
+  }
+  st.innerHTML = titleHeader(room.title) + (room.session ? sessionHtml() : statusHtml()) + (room.session ? "" : hostExtras());
+  tick();
+}
+
+function tick() {
+  const el = $("#cd"); if (!el || !room || !room.session || room.session.phase !== "countdown") return;
+  const now = Date.now() + offset, rem = room.session.startAt - now;
+  if (rem > 0) el.innerHTML = `<p class="font-metric-badge text-[12px] uppercase tracking-wider text-secondary">Get ready to press play on ${esc(room.session.provider.name)}</p><div class="font-display-hero text-[96px] leading-none font-extrabold text-white">${Math.ceil(rem / 1000)}</div>`;
+  else if (!room.state.playing) el.innerHTML = `<p class="font-headline-md text-white">Paused by the host</p><p class="font-metric-badge text-[14px] text-secondary">at ${PT.fmtTime(room.state.position)}</p><p class="text-sm text-on-surface-variant">Pause on ${esc(room.session.provider.name)} too, then wait for the host to resume.</p>`;
+  else if (now - room.session.startAt < 4000) el.innerHTML = `<div class="font-display-hero text-[56px] sm:text-[72px] leading-none font-extrabold text-tertiary">PLAY NOW</div><p class="text-on-surface-variant">Press play on ${esc(room.session.provider.name)}</p>`;
+  else el.innerHTML = `<p class="font-metric-badge text-[12px] uppercase tracking-wider text-secondary">Shared clock</p><div class="font-metric-badge text-[56px] leading-none font-semibold text-white">${PT.fmtTime(statePos())}</div><p class="text-sm text-on-surface-variant">Watching ${esc(room.title.title)} together</p>`;
+}
+setInterval(tick, 250);
+
+$("#stage").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-act]"); if (b) {
+    const a = b.dataset.act;
+    if (a === "pick") openPicker("title");
+    else if (a === "start") send({ t: "start" });
+    else if (a === "ready") send({ t: "ready" });
+    else if (a === "force") send({ t: "force" });
+    else if (a === "stop") send({ t: "stop" });
+    else if (a === "pause") send({ t: "pause", position: statePos() });
+    else if (a === "resume") send({ t: "play", position: statePos() });
+    else if (a === "none") send({ t: "services", services: PT.getServices() || [] });
+    return;
+  }
+  if (e.target.id === "yt-unlock") { e.target.remove(); ytUnlocked = true; if (ytPlayer && ytReady) { try { ytPlayer.playVideo(); } catch (x) {} } ytApply(); }
+});
+$("#stage").addEventListener("change", (e) => {
+  const c = e.target.closest("[data-svc]"); if (!c) return;
+  const k = c.dataset.svc.toLowerCase().trim(), s = new Set(PT.getServices() || []);
+  c.checked ? s.add(k) : s.delete(k);
+  PT.setServices([...s]); myServices = [...s]; send({ t: "services", services: myServices });
+});
+$("#stage").addEventListener("submit", (e) => {
+  if (!e.target.matches("[data-yt]")) return; e.preventDefault();
+  const v = e.target.querySelector("#yt-url").value.trim(); if (v) send({ t: "setmedia", url: v });
+});
+
+/* ---------- title picker (host picks, anyone suggests) ---------- */
+function openPicker(mode) {
+  const m = PT.modal(`<div class="p-5"><div class="flex items-center justify-between"><h3 class="font-headline-sm text-headline-sm text-white">${mode === "title" ? "Pick what to watch" : "Suggest a title"}</h3><button id="pk-x" class="w-8 h-8 rounded-lg bg-surface-container-high text-on-surface-variant hover:text-white" aria-label="Close">${ic("close", "!text-[18px]")}</button></div>
+    <div class="flex gap-2 mt-3"><input id="pk-q" autofocus autocomplete="off" class="flex-1 min-w-0 bg-[#11151D] border border-[#2A3140] rounded-xl px-3 py-2 text-white" placeholder="Search any title…" aria-label="Search titles"/><select id="pk-t" aria-label="Type" class="bg-[#11151D] border border-[#2A3140] rounded-xl px-2 text-white"><option value="movie">Movies</option><option value="tv">Series</option><option value="documentary">Docs</option></select></div>
+    <p id="pk-msg" class="text-sm text-on-surface-variant mt-3"></p><div id="pk-res" class="grid grid-cols-3 sm:grid-cols-4 gap-3 mt-3 max-h-[55vh] overflow-y-auto"></div></div>`, { wide: "max-w-2xl" });
+  m.querySelector("#pk-x").onclick = PT.closeModal;
+  let seq = 0, deb;
+  async function run() {
+    const q = m.querySelector("#pk-q").value.trim(), type = m.querySelector("#pk-t").value, my = ++seq, msg = m.querySelector("#pk-msg");
+    msg.textContent = "Searching…";
+    try {
+      const d = q.length >= 2 ? await PT.api(`/api/search?q=${encodeURIComponent(q)}&type=${type}`) : await PT.api(`/api/browse?type=${type}`);
+      if (my !== seq) return;
+      msg.textContent = d.items.length ? "" : q ? "No matches. Try another spelling or type." : "Start typing to search.";
+      m.querySelector("#pk-res").innerHTML = d.items.map((t) => `<button data-id="${esc(t.id)}" class="text-left flex flex-col gap-1 group min-w-0"><div class="aspect-[2/3] rounded-lg overflow-hidden border border-[#2A3140] group-hover:border-primary">${PT.poster(t, true)}</div><span class="text-[12px] text-white font-semibold line-clamp-2">${esc(t.title)}</span><span class="text-[11px] text-on-surface-variant">${t.year || ""}</span></button>`).join("");
+    } catch (e) { if (my === seq) { msg.textContent = e.message; m.querySelector("#pk-res").innerHTML = ""; } }
+  }
+  m.querySelector("#pk-q").oninput = () => { clearTimeout(deb); deb = setTimeout(run, 350); };
+  m.querySelector("#pk-t").onchange = run; run();
+  m.querySelector("#pk-res").onclick = (e) => {
+    const b = e.target.closest("[data-id]"); if (!b) return;
+    send({ t: mode === "title" ? "settitle" : "request", id: b.dataset.id }); PT.closeModal();
+    PT.toast(mode === "title" ? "Checking where it streams…" : "Suggestion sent");
+  };
+}
+$("#suggest").onclick = () => openPicker("queue");
+
+/* ---------- chat ---------- */
+function chatHtml(c) {
+  const ts = room.session && room.session.phase === "countdown" && c.pos > 0 ? `<span class="font-metric-badge text-[10px] text-on-surface-variant">[${PT.fmtTime(c.pos)}]</span>` : "";
+  return `<div class="flex items-start gap-2.5"><div class="w-7 h-7 rounded-full bg-surface-container-highest flex items-center justify-center text-[10px] text-white shrink-0 mt-0.5">${esc(PT.initials(c.name))}</div><div class="flex-1 min-w-0"><div class="flex items-center gap-2"><span class="font-label-action text-[12px] ${c.host ? "text-primary" : "text-secondary"} font-semibold">${esc(c.name)}</span>${c.host ? '<span class="text-[10px] font-metric-badge text-secondary bg-secondary/10 px-1 rounded">HOST</span>' : ""}${ts}</div><p class="font-body-md text-[13px] text-on-surface leading-snug mt-0.5 break-words">${esc(c.text)}</p></div></div>`;
+}
+function renderChatAll() { $("#chat").innerHTML = room.chat.length ? room.chat.map(chatHtml).join("") : `<p class="text-sm text-on-surface-variant">No messages yet. Say hi.</p>`; $("#chat").scrollTop = 1e9; }
+function addChat(c) { const el = $("#chat"); if (!room.chat.length || room.chat.length === 1) el.innerHTML = ""; el.insertAdjacentHTML("beforeend", chatHtml(c)); el.scrollTop = 1e9; }
+$("#send").onsubmit = (e) => { e.preventDefault(); const v = $("#msg").value.trim(); if (!v) return; send({ t: "chat", text: v }); $("#msg").value = ""; };
+const EMOJI = ["🍿", "🚀", "❤️", "😂", "🤯", "👏", "🔥", "😱"];
+$("#reacts").innerHTML = EMOJI.map((e) => `<button data-e="${e}" class="flex-1 py-1 rounded-lg bg-surface-container-high/60 hover:bg-surface-container-high border border-outline-variant/20 text-base active:scale-95 transition-all" aria-label="React ${e}">${e}</button>`).join("");
+$("#reacts").onclick = (e) => { const b = e.target.closest("[data-e]"); if (b) send({ t: "react", emoji: b.dataset.e }); };
+function floatEmoji(em) {
+  const f = $("#floaters"), s = document.createElement("span");
+  s.className = "float-emoji px-3 py-1.5 rounded-full bg-surface-container/80 border border-outline-variant/30 text-xl shadow-lg"; s.textContent = em;
+  s.style.right = 16 + Math.random() * 90 + "px"; f.appendChild(s); setTimeout(() => s.remove(), 3000);
+}
+
+/* ---------- queue ---------- */
+function renderQueue() {
+  const q = room.queue, r = room.requests, host = you.host;
+  const item = (x, actions) => `<div class="flex gap-3 items-center p-2 rounded-xl bg-surface-container border border-outline-variant/20"><div class="w-10 aspect-[2/3] rounded overflow-hidden shrink-0">${PT.poster(x.title, true)}</div><div class="min-w-0 flex-1"><p class="text-sm text-white font-semibold truncate">${esc(x.title.title)}${x.title.year ? " (" + x.title.year + ")" : ""}</p><p class="text-[11px] text-on-surface-variant">Suggested by ${esc(x.by)}</p></div><div class="flex gap-1 shrink-0">${actions}</div></div>`;
+  const a = (act, id, label, cls) => `<button data-q="${act}" data-id="${esc(id)}" class="px-2 py-1 rounded-lg text-[11px] font-label-action ${cls}">${label}</button>`;
+  let html = "";
+  if (r.length) html += `<p class="font-metric-badge text-[11px] uppercase tracking-wider text-secondary">${host ? "Requests" : "Waiting for host"}</p>` + r.map((x) => item(x, host ? a("approve", x.id, "Approve", "bg-secondary/20 text-secondary") + a("dismiss", x.id, "Dismiss", "bg-surface-container-high text-on-surface-variant") : "")).join("");
+  if (q.length) html += `<p class="font-metric-badge text-[11px] uppercase tracking-wider text-secondary mt-2">Up next</p>` + q.map((x) => item(x, host ? a("load", x.id, "Watch now", "bg-primary text-[#0B0D12]") + a("unqueue", x.id, "Remove", "bg-surface-container-high text-on-surface-variant") : "")).join("");
+  $("#queue").innerHTML = html || `<p class="text-sm text-on-surface-variant">The queue is empty. Suggest something to watch next.</p>`;
+  const n = q.length + r.length; $("#qcount").textContent = n; $("#qcount").classList.toggle("hidden", !n);
+}
+$("#queue").onclick = (e) => { const b = e.target.closest("[data-q]"); if (b) send({ t: b.dataset.q, id: b.dataset.id }); };
+
+function renderTabs() {
+  document.querySelectorAll("[data-tab]").forEach((b) => {
+    const on = b.dataset.tab === tab; b.setAttribute("aria-selected", on);
+    b.className = `flex-1 pb-3 text-center font-label-action text-label-action flex items-center justify-center gap-1.5 transition-colors ${on ? "text-primary border-b-2 border-primary" : "text-on-surface-variant hover:text-on-surface"}`;
+  });
+  $("#pane-chat").classList.toggle("hidden", tab !== "chat"); $("#pane-chat").classList.toggle("flex", tab === "chat");
+  $("#pane-queue").classList.toggle("hidden", tab !== "queue"); $("#pane-queue").classList.toggle("flex", tab === "queue");
+  if (tab === "chat") $("#unread").classList.add("hidden");
+}
+document.querySelectorAll("[data-tab]").forEach((b) => (b.onclick = () => { tab = b.dataset.tab; renderTabs(); }));
+
+/* ---------- YouTube (kept in sync with the host) ---------- */
+let ytPlayer = null, ytReady = false, ytUnlocked = false;
+function loadYT(cb) {
+  if (window.YT && YT.Player) return cb();
+  window.onYouTubeIframeAPIReady = cb;
+  if (!document.getElementById("yt-api")) { const s = document.createElement("script"); s.id = "yt-api"; s.src = "https://www.youtube.com/iframe_api"; s.onerror = () => PT.toast("Couldn't load YouTube. Check your connection or ad blocker."); document.head.appendChild(s); }
+}
+function mountYT(id) {
+  ytReady = false; ytUnlocked = you.host;
+  loadYT(() => { ytPlayer = new YT.Player("yt", { videoId: id, playerVars: { rel: 0, playsinline: 1, controls: you.host ? 1 : 0, disablekb: you.host ? 0 : 1, origin: location.origin }, events: { onReady: () => { ytReady = true; ytApply(); }, onStateChange: onYtState, onError: () => PT.toast("YouTube couldn't play this video. It may not allow embedding.") } }); });
+}
+function destroyYT() { try { ytPlayer && ytPlayer.destroy(); } catch (e) {} ytPlayer = null; ytReady = false; ytId = null; }
+function onYtState(e) {
+  if (!you.host || !ytReady) return;
+  const t = ytPlayer.getCurrentTime();
+  if (e.data === 1) send({ t: "play", position: t }); else if (e.data === 2) send({ t: "pause", position: t });
+}
+function ytApply() {
+  if (!room || !room.media || !ytReady || you.host || !ytUnlocked) return;
+  try {
+    const target = statePos(); if (Math.abs(ytPlayer.getCurrentTime() - target) > 2) ytPlayer.seekTo(target, true);
+    room.state.playing ? ytPlayer.playVideo() : ytPlayer.pauseVideo();
+  } catch (e) {}
+}
+setInterval(() => { if (you && you.host && room && room.media && ytReady && ytPlayer.getPlayerState && ytPlayer.getPlayerState() === 1) send({ t: "heartbeat", position: ytPlayer.getCurrentTime() }); }, 3000);
+
+/* ---------- voice chat (WebRTC, peer to peer; the server only relays setup messages) ---------- */
+const voice = { on: false, stream: null, pcs: new Map(), muted: false, ice: [{ urls: "stun:stun.l.google.com:19302" }], an: new Map(), ctx: null };
+function paintVoice() {
+  const n = room ? room.members.filter((m) => m.voice).length : 0;
+  $("#voice-state").textContent = voice.on ? `On · ${n} talking` : n ? `${n} in voice` : "Off";
+  $("#voice").innerHTML = voice.on ? `${ic("call_end", "!text-[16px]")}<span>Leave voice</span>` : `${ic("headset_mic", "!text-[16px]")}<span>Join voice</span>`;
+  $("#mute").classList.toggle("hidden", !voice.on);
+  $("#mute").innerHTML = ic(voice.muted ? "mic_off" : "mic", "!text-[18px]");
+  $("#mute").setAttribute("aria-label", voice.muted ? "Unmute microphone" : "Mute microphone");
+}
+async function voiceStart() {
+  if (!navigator.mediaDevices || !window.isSecureContext) return PT.toast("Voice chat needs a secure (https) connection and a browser that allows the microphone.");
+  try { voice.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }, video: false }); }
+  catch (e) { return PT.toast("Microphone blocked. Allow microphone access in your browser to join voice."); }
+  voice.on = true; voice.muted = false; watchLevel(you.pid, voice.stream);
+  send({ t: "voice", on: true }); paintVoice();
+}
+function voiceStop(silent) {
+  voice.pcs.forEach((e, pid) => closePeer(pid));
+  if (voice.stream) voice.stream.getTracks().forEach((t) => t.stop());
+  voice.stream = null; voice.on = false; voice.an.delete(you && you.pid);
+  if (!silent) { send({ t: "voice", on: false }); paintVoice(); }
+}
+function closePeer(pid) {
+  const e = voice.pcs.get(pid); if (!e) return;
+  try { e.pc.close(); } catch (x) {} if (e.audio) { e.audio.srcObject = null; e.audio.remove(); }
+  voice.pcs.delete(pid); voice.an.delete(pid);
+}
+function makePeer(pid) {
+  const pc = new RTCPeerConnection({ iceServers: voice.ice }), e = { pc, pending: [], audio: null };
+  voice.stream.getTracks().forEach((t) => pc.addTrack(t, voice.stream));
+  pc.onicecandidate = (ev) => { if (ev.candidate) send({ t: "rtc", to: pid, data: { ice: ev.candidate } }); };
+  pc.ontrack = (ev) => {
+    if (!e.audio) { e.audio = new Audio(); e.audio.autoplay = true; e.audio.style.display = "none"; document.body.appendChild(e.audio); }
+    e.audio.srcObject = ev.streams[0]; e.audio.play().catch(() => {}); watchLevel(pid, ev.streams[0]);
+  };
+  pc.onconnectionstatechange = () => { if (pc.connectionState === "failed") { PT.toast("A voice connection failed. Some networks block voice chat; the host may need to set up a TURN server."); closePeer(pid); } };
+  voice.pcs.set(pid, e); return e;
+}
+async function callPeer(pid) {
+  const e = makePeer(pid);
+  try { const o = await e.pc.createOffer(); await e.pc.setLocalDescription(o); send({ t: "rtc", to: pid, data: { sdp: e.pc.localDescription } }); } catch (x) { closePeer(pid); }
+}
+async function onSignal(from, d) {
+  if (!voice.on || !d) return;
+  let e = voice.pcs.get(from);
+  try {
+    if (d.sdp && d.sdp.type === "offer") {
+      if (!e) e = makePeer(from);
+      await e.pc.setRemoteDescription(d.sdp);
+      for (const c of e.pending.splice(0)) await e.pc.addIceCandidate(c).catch(() => {});
+      const a = await e.pc.createAnswer(); await e.pc.setLocalDescription(a);
+      send({ t: "rtc", to: from, data: { sdp: e.pc.localDescription } });
+    } else if (d.sdp && d.sdp.type === "answer" && e) {
+      await e.pc.setRemoteDescription(d.sdp);
+      for (const c of e.pending.splice(0)) await e.pc.addIceCandidate(c).catch(() => {});
+    } else if (d.ice && e) {
+      if (e.pc.remoteDescription) await e.pc.addIceCandidate(d.ice).catch(() => {}); else e.pending.push(d.ice);
+    }
+  } catch (x) { console.warn("voice signalling", x); }
+}
+function voiceSync() {
+  paintVoice(); if (!voice.on || !room) return;
+  const peers = room.members.filter((m) => m.voice && m.pid !== you.pid);
+  for (const pid of [...voice.pcs.keys()]) if (!peers.some((p) => p.pid === pid)) closePeer(pid);
+  // the person with the smaller id makes the call, so two people never call each other at once
+  for (const p of peers) if (!voice.pcs.has(p.pid) && you.pid < p.pid) callPeer(p.pid);
+}
+function watchLevel(pid, stream) {
+  try {
+    voice.ctx = voice.ctx || new (window.AudioContext || window.webkitAudioContext)();
+    const an = voice.ctx.createAnalyser(); an.fftSize = 512; voice.ctx.createMediaStreamSource(stream).connect(an);
+    voice.an.set(pid, { an, buf: new Uint8Array(an.fftSize) });
+  } catch (e) {}
+}
+setInterval(() => {
+  voice.an.forEach((o, pid) => {
+    o.an.getByteTimeDomainData(o.buf); let mx = 0; for (const v of o.buf) mx = Math.max(mx, Math.abs(v - 128));
+    const el = document.querySelector(`[data-pid="${pid}"]`); if (el) el.classList.toggle("speaking", mx > 12 && !(pid === (you && you.pid) && voice.muted));
+  });
+}, 150);
+$("#voice").onclick = () => (voice.on ? voiceStop() : voiceStart());
+$("#mute").onclick = () => { voice.muted = !voice.muted; if (voice.stream) voice.stream.getAudioTracks().forEach((t) => (t.enabled = !voice.muted)); paintVoice(); };
+
+/* ---------- header buttons ---------- */
+$("#invite").onclick = () => PT.copy(`${location.origin}/room.html?code=${code}`, "Invite link copied. Send it to your friends.");
+$("#leave").onclick = () => { closedByUs = true; voiceStop(true); if (ws) ws.close(); location.href = "/"; };
+window.addEventListener("beforeunload", () => { closedByUs = true; });
+
+/* ---------- start ---------- */
+(async function () {
+  $("#code-chip").textContent = code;
+  try { await PT.api("/api/rooms/" + code); } catch (e) { return fatal(e.message); }
+  try { const c = await PT.api("/api/config"); if (c.iceServers) voice.ice = c.iceServers; } catch (e) {}
+  paintVoice(); renderTabs();
+  PT.getName() ? connect() : askName(connect);
+})();
+</script>
+</body></html>

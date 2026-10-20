@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PartyTime - Discover</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="/theme.js"></script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; line-height: 1; display: inline-block; vertical-align: middle; }
+  .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: #111318; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #33353a; border-radius: 9999px; }
+  :focus-visible { outline: 2px solid #4cdbca; outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body class="bg-[#0B0D12] text-on-surface font-body-md text-body-md antialiased selection:bg-primary selection:text-on-primary min-h-screen flex flex-col">
+
+<header class="z-50 min-h-16 bg-surface-container-lowest/80 backdrop-blur-md border-b border-outline-variant/30 sticky top-0 px-4 sm:px-gutter py-2 flex flex-wrap items-center gap-x-4 gap-y-2">
+  <a class="font-headline-sm text-headline-sm font-extrabold flex items-center gap-space-xs shrink-0 group" href="/">
+    <div class="w-8 h-8 rounded-lg bg-surface-container-high border border-outline-variant/40 flex items-center justify-center relative overflow-hidden group-hover:border-primary transition-all">
+      <div class="absolute inset-0 bg-gradient-to-tr from-primary to-secondary opacity-30 group-hover:opacity-60 transition-opacity"></div>
+      <span class="material-symbols-outlined text-secondary relative z-10" style="font-variation-settings: 'FILL' 1;">movie_filter</span>
+    </div>
+    <span class="tracking-tight text-white">Party<span class="text-primary">Time</span></span>
+  </a>
+  <div class="relative flex-1 min-w-[200px] max-w-2xl order-last sm:order-none basis-full sm:basis-auto flex items-center">
+    <span class="material-symbols-outlined text-outline absolute left-3 pointer-events-none text-[18px]">search</span>
+    <input id="q" type="search" autocomplete="off" aria-label="Search every movie, series and documentary" class="w-full bg-[#11151D] border border-[#2A3140] hover:border-outline focus:border-primary text-on-surface font-body-sm text-body-sm rounded-xl pl-9 pr-3 py-2 focus:ring-1 focus:ring-primary focus:outline-none transition-all placeholder:text-outline/70" placeholder="Search any movie, series or documentary ever released..."/>
+  </div>
+  <nav class="hidden md:flex items-center gap-space-md">
+    <a class="text-primary border-b-2 border-primary font-label-action text-label-action pb-1 flex items-center gap-1.5" href="#top"><span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">explore</span>Discover</a>
+    <a class="text-on-surface-variant hover:text-on-surface font-label-action text-label-action transition-colors flex items-center gap-1.5" href="#rooms"><span class="material-symbols-outlined text-[16px]">groups</span>Watch Parties</a>
+    <a class="text-on-surface-variant hover:text-on-surface font-label-action text-label-action transition-colors flex items-center gap-1.5" href="#" id="nav-list"><span class="material-symbols-outlined text-[16px]">video_library</span>My List</a>
+  </nav>
+  <div class="flex items-center gap-space-sm ml-auto">
+    <button id="who" class="px-3 py-1.5 rounded-full bg-[#181E29] border border-[#2A3140] hover:border-secondary/50 text-on-surface font-label-action text-label-action flex items-center gap-2" title="Change your name"><span id="who-av" class="w-6 h-6 rounded-full bg-surface-container-highest flex items-center justify-center text-[10px]">?</span><span id="who-name" class="hidden sm:inline">Set your name</span></button>
+    <button id="create" class="bg-primary hover:bg-primary-fixed text-[#0B0D12] font-label-action text-label-action px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-[0_0_16px_-2px_rgba(199,191,255,0.3)] transition-all active:scale-[0.98]"><span class="material-symbols-outlined text-[16px]">add_circle</span><span>Create Room</span></button>
+  </div>
+</header>
+
+<main id="top" class="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-margin py-space-lg flex flex-col gap-space-xl">
+
+  <section class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md">
+    <div>
+      <h1 class="font-headline-lg text-headline-lg font-bold text-white tracking-tight">Watch together. Wherever you are.</h1>
+      <p class="font-body-md text-body-md text-on-surface-variant mt-1 max-w-2xl">Pick any title, open a room, and share the link. PartyTime checks that everyone has a service that carries it, sends you all there, and counts you in so you press play together. Talk over voice while you watch.</p>
+    </div>
+    <form id="join" class="flex gap-1.5 shrink-0">
+      <input id="code" maxlength="6" autocomplete="off" aria-label="Room code" class="uppercase font-metric-badge bg-[#181E29] border border-[#2A3140] text-white rounded-xl px-3 py-2 focus:outline-none focus:border-secondary placeholder:text-outline/60 text-sm tracking-widest w-40" placeholder="ROOM CODE"/>
+      <button class="bg-secondary hover:bg-secondary-fixed text-[#0B0D12] px-4 py-2 rounded-xl font-label-action shrink-0 font-bold">Join room</button>
+    </form>
+  </section>
+
+  <section id="rooms" class="flex flex-col gap-space-md">
+    <div class="flex items-center gap-3">
+      <div class="w-3 h-3 rounded-full bg-secondary animate-ping"></div>
+      <h2 class="font-headline-md text-headline-md font-bold text-white tracking-tight">Live Watch Parties</h2>
+      <span id="rooms-count" class="px-2 py-0.5 rounded-full bg-surface-container-high border border-outline-variant/30 text-on-surface-variant font-metric-badge text-metric-badge">0 open rooms</span>
+    </div>
+    <div id="rooms-grid" class="grid grid-cols-1 md:grid-cols-3 gap-space-md"></div>
+  </section>
+
+  <section class="flex flex-col gap-space-md" id="catalogue">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <h2 id="cat-title" class="font-headline-md text-headline-md font-bold text-white tracking-tight">Popular movies</h2>
+        <p id="cat-sub" class="font-body-sm text-body-sm text-on-surface-variant">Search above to find any title.</p>
+      </div>
+      <div id="tabs" class="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar" role="tablist"></div>
+    </div>
+    <div id="grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-space-md"></div>
+    <div id="msg" class="text-on-surface-variant"></div>
+    <div class="flex justify-center"><button id="more" class="hidden px-5 py-2 rounded-xl bg-[#181E29] hover:bg-[#222938] border border-[#2A3140] hover:border-primary text-white font-label-action">Load more</button></div>
+  </section>
+</main>
+
+<footer class="mt-auto border-t border-outline-variant/20 bg-[#0B0D12] py-6 px-4 sm:px-margin">
+  <div class="max-w-[1440px] mx-auto flex flex-col gap-2 text-xs text-outline">
+    <span class="font-headline-sm text-[16px] font-extrabold text-white">Party<span class="text-primary">Time</span></span>
+    <span id="credits">Movie data and artwork come from TMDB or OMDb. Where-to-watch data is provided by JustWatch through TMDB. PartyTime is not endorsed or certified by TMDB. Streaming catalogues change often, so check the service before you plan a night.</span>
+  </div>
+</footer>
+
+<script src="/app.js"></script>
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = PT.esc;
+const S = { tab: "movie", page: 1, pages: 1, loading: false, q: "", mode: "browse", cfg: { provider: null, availability: false }, seq: 0 };
+const TABS = [["movie", "Movies", "movie"], ["tv", "TV series", "tv"], ["documentary", "Documentaries", "science"], ["list", "My List", "bookmark"]];
+
+/* ---------- header ---------- */
+function paintWho() {
+  const n = PT.getName();
+  $("#who-name").textContent = n || "Set your name";
+  $("#who-av").textContent = n ? PT.initials(n) : "?";
+}
+function askName(then) {
+  const m = PT.modal(`<form id="nm" class="p-6 flex flex-col gap-4"><h3 class="font-headline-sm text-headline-sm text-white">What should friends call you?</h3>
+    <input id="nm-in" autofocus maxlength="30" required class="bg-[#11151D] border border-[#2A3140] rounded-xl px-3 py-2 text-white focus:border-primary focus:outline-none" value="${esc(PT.getName())}" placeholder="Your name" aria-label="Your name"/>
+    <div class="flex justify-end gap-2"><button type="button" id="nm-x" class="px-4 py-2 rounded-xl border border-[#2A3140] text-on-surface-variant hover:text-white">Cancel</button><button class="px-4 py-2 rounded-xl bg-primary text-[#0B0D12] font-bold">Save</button></div></form>`);
+  m.querySelector("#nm-x").onclick = PT.closeModal;
+  m.querySelector("#nm").onsubmit = (e) => { e.preventDefault(); const v = m.querySelector("#nm-in").value.trim(); if (!v) return; PT.setName(v); paintWho(); PT.closeModal(); if (then) then(); };
+}
+const needName = (then) => (PT.getName() ? then() : askName(then));
+$("#who").onclick = () => askName();
+
+/* ---------- catalogue ---------- */
+function tabsHtml() {
+  $("#tabs").innerHTML = TABS.map(([k, l, ic]) => `<button role="tab" aria-selected="${S.tab === k}" data-tab="${k}" class="px-3 py-1 rounded-full ${S.tab === k ? "bg-primary text-[#0B0D12] font-bold" : "bg-[#181E29] hover:bg-surface-container-high border border-[#2A3140] text-on-surface-variant hover:text-white"} font-label-action text-[12px] shrink-0 transition-colors flex items-center gap-1">${PT.ic(ic, "!text-[14px]")}${l}</button>`).join("");
+}
+$("#tabs").onclick = (e) => { const b = e.target.closest("[data-tab]"); if (b) { S.tab = b.dataset.tab; load(true); } };
+$("#nav-list").onclick = (e) => { e.preventDefault(); S.tab = "list"; $("#q").value = ""; S.q = ""; load(true); $("#catalogue").scrollIntoView(); };
+
+function cardHtml(t) {
+  return `<button data-open="${esc(t.id)}" class="group text-left flex flex-col gap-2 min-w-0" aria-label="${esc(t.title)}${t.year ? " (" + t.year + ")" : ""}">
+    <div class="aspect-[2/3] w-full rounded-xl overflow-hidden border border-[#2A3140] group-hover:border-primary transition-all group-hover:-translate-y-1">${PT.poster(t)}</div>
+    <div class="min-w-0"><h4 class="font-headline-sm text-[14px] font-semibold text-white group-hover:text-primary transition-colors line-clamp-2">${esc(t.title)}</h4><p class="font-body-sm text-[11px] text-on-surface-variant">${t.year || "Year unknown"}${t.kind === "tv" ? " · Series" : ""}</p></div></button>`;
+}
+async function load(reset) {
+  if (S.loading && !reset) return;
+  const my = ++S.seq;
+  if (reset) { S.page = 1; S.pages = 1; $("#grid").innerHTML = ""; $("#more").classList.add("hidden"); }
+  tabsHtml();
+  const label = TABS.find((t) => t[0] === S.tab)[1];
+  S.q = $("#q").value.trim();
+  $("#cat-title").textContent = S.q.length >= 2 ? `Results for "${S.q}"` : S.tab === "list" ? "My List" : "Popular " + label.toLowerCase();
+  $("#cat-sub").textContent = S.tab === "list" ? "Titles you saved on this device." : S.q.length >= 2 ? `Searching ${label.toLowerCase()}. Use the tabs to search series or documentaries.` : "Search above to find any title.";
+  $("#msg").textContent = "Loading…"; S.loading = true;
+  try {
+    let items, pages = 1;
+    if (S.tab === "list") {
+      items = (await PT.api("/api/watchlist?clientId=" + PT.clientId)).items;
+      if (!items.length) { $("#msg").textContent = "Nothing saved yet. Open any title and choose Add to My List."; S.loading = false; return; }
+    } else if (S.q.length >= 2) {
+      const d = await PT.api(`/api/search?q=${encodeURIComponent(S.q)}&type=${S.tab}&page=${S.page}`);
+      items = d.items; pages = d.pages;
+    } else {
+      const d = await PT.api(`/api/browse?type=${S.tab}&page=${S.page}`);
+      items = d.items; pages = d.pages;
+    }
+    if (my !== S.seq) return;
+    S.pages = pages;
+    $("#grid").insertAdjacentHTML("beforeend", items.map(cardHtml).join(""));
+    $("#msg").textContent = !$("#grid").children.length ? (S.q ? `No ${label.toLowerCase()} match "${S.q}". Try another spelling, or another tab.` : "Nothing to show here yet.") : "";
+    $("#more").classList.toggle("hidden", S.page >= S.pages || S.tab === "list");
+  } catch (e) {
+    if (my !== S.seq) return;
+    $("#msg").innerHTML = `<div class="p-4 rounded-xl bg-surface-container border border-error/30 text-on-surface">${esc(e.message)}</div>`;
+  }
+  S.loading = false;
+}
+$("#more").onclick = () => { S.page++; load(false); };
+let deb; $("#q").addEventListener("input", () => { clearTimeout(deb); deb = setTimeout(() => load(true), 350); });
+$("#grid").onclick = (e) => { const b = e.target.closest("[data-open]"); if (b) openDetail(b.dataset.open); };
+
+/* ---------- detail ---------- */
+async function openDetail(id) {
+  const m = PT.modal(`<div class="p-8 text-center text-on-surface-variant">Loading…</div>`, { wide: "max-w-3xl" });
+  let t; try { t = await PT.api("/api/movie/" + encodeURIComponent(id)); } catch (e) { m.firstElementChild.innerHTML = `<div class="p-6"><p class="text-white">${esc(e.message)}</p><button class="mt-4 px-4 py-2 rounded-xl border border-[#2A3140]" onclick="PT.closeModal()">Close</button></div>`; return; }
+  let saved = false; try { saved = (await PT.api("/api/watchlist?clientId=" + PT.clientId)).ids.includes(id); } catch (e) {}
+  const facts = [["Year", t.year], ["Director", t.director], ["Cast", t.cast], ["Runtime", t.runtime ? t.runtime + " min" : null], ["Rated", t.rated], ["Language", t.language]].filter((x) => x[1]);
+  m.firstElementChild.innerHTML = `<div class="p-5 sm:p-6 flex flex-col sm:flex-row gap-5">
+    <div class="w-36 sm:w-52 shrink-0 aspect-[2/3] rounded-xl overflow-hidden border border-[#2A3140] self-center sm:self-start">${PT.poster(t)}</div>
+    <div class="min-w-0 flex-1 flex flex-col gap-3">
+      <div class="flex items-start justify-between gap-3"><div><h2 class="font-headline-md text-headline-md font-bold text-white">${esc(t.title)}${t.year ? ` <span class="text-on-surface-variant font-normal">(${t.year})</span>` : ""}</h2>
+      <div class="flex flex-wrap gap-1.5 mt-2"><span class="px-2 py-0.5 rounded-full bg-primary/15 text-primary font-metric-badge text-[11px]">${PT.kindLabel(t)}</span>${t.genres.map((g) => `<span class="px-2 py-0.5 rounded-full border border-outline-variant/40 text-secondary font-metric-badge text-[11px]">${esc(g)}</span>`).join("")}${t.rating ? `<span class="px-2 py-0.5 rounded-full border border-outline-variant/40 text-white font-metric-badge text-[11px]">★ ${t.rating.value} ${esc(t.rating.source)}</span>` : ""}</div></div>
+      <button class="w-8 h-8 rounded-lg bg-surface-container-high border border-[#2A3140] text-on-surface-variant hover:text-white shrink-0" aria-label="Close" onclick="PT.closeModal()">${PT.ic("close", "!text-[18px]")}</button></div>
+      <p class="font-body-md text-on-surface-variant">${esc(t.plot || "No description available.")}</p>
+      <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 font-body-sm">${facts.map(([k, v]) => `<dt class="text-outline">${k}</dt><dd class="text-on-surface">${esc(v)}</dd>`).join("")}</dl>
+      <div class="border-t border-outline-variant/30 pt-3">
+        <div class="flex items-center justify-between gap-3 mb-2"><h3 class="font-headline-sm text-[16px] text-white">Where to watch</h3>
+        <select id="d-country" aria-label="Country" class="bg-[#11151D] border border-[#2A3140] rounded-lg text-sm text-white py-1 pl-2 pr-7">${PT.countryOptions(PT.getCountry())}</select></div>
+        <div id="d-avail" class="text-on-surface-variant font-body-sm">Checking…</div>
+      </div>
+      <div class="flex flex-wrap gap-2 pt-1">
+        <button id="d-party" class="bg-primary hover:bg-primary-fixed text-[#0B0D12] font-label-action px-4 py-2.5 rounded-xl flex items-center gap-2 font-bold">${PT.ic("groups", "!text-[18px]")}Start a watch party</button>
+        <button id="d-save" class="bg-[#181E29] hover:bg-[#222938] border border-[#2A3140] hover:border-primary text-white font-label-action px-4 py-2.5 rounded-xl flex items-center gap-2">${PT.ic("bookmark", "!text-[18px]")}<span>${saved ? "Remove from My List" : "Add to My List"}</span></button>
+      </div></div></div>`;
+  const av = m.querySelector("#d-avail");
+  async function loadAvail() {
+    const c = m.querySelector("#d-country").value; PT.setCountry(c); av.textContent = "Checking…";
+    try { av.innerHTML = PT.availabilityHtml(await PT.api(`/api/availability/${encodeURIComponent(id)}?country=${c}`), t.title, c) + `<p class="font-metric-badge text-[10px] text-outline mt-2">Availability data from JustWatch via TMDB. It can lag behind the services.</p>`; }
+    catch (e) { av.textContent = e.message; }
+  }
+  m.querySelector("#d-country").onchange = loadAvail; loadAvail();
+  m.querySelector("#d-party").onclick = () => createRoomModal(t);
+  m.querySelector("#d-save").onclick = async (e) => {
+    try {
+      if (saved) await PT.api(`/api/watchlist/${encodeURIComponent(id)}?clientId=${PT.clientId}`, { method: "DELETE" }); else await PT.post("/api/watchlist", { clientId: PT.clientId, id });
+      saved = !saved; e.currentTarget.querySelector("span:last-child").textContent = saved ? "Remove from My List" : "Add to My List";
+      PT.toast(saved ? "Added to My List" : "Removed from My List"); if (S.tab === "list") load(true);
+    } catch (err) { PT.toast(err.message); }
+  };
+}
+
+/* ---------- rooms ---------- */
+function createRoomModal(t) {
+  const m = PT.modal(`<form id="cr" class="p-6 flex flex-col gap-4"><h3 class="font-headline-sm text-headline-sm text-white">${t ? "Start a watch party" : "Create a room"}</h3>
+    ${t ? `<div class="flex items-center gap-3 p-2 rounded-xl bg-[#11151D] border border-[#2A3140]"><div class="w-10 aspect-[2/3] rounded overflow-hidden shrink-0">${PT.poster(t, true)}</div><div class="min-w-0"><p class="text-white font-semibold truncate">${esc(t.title)}</p><p class="text-xs text-on-surface-variant">${t.year || ""} · ${PT.kindLabel(t)}</p></div></div>` : `<p class="text-sm text-on-surface-variant">You'll pick what to watch inside the room.</p>`}
+    <label class="flex flex-col gap-1 text-sm text-on-surface-variant">Your name<input id="cr-name" required maxlength="30" class="bg-[#11151D] border border-[#2A3140] rounded-xl px-3 py-2 text-white" value="${esc(PT.getName())}"/></label>
+    <label class="flex flex-col gap-1 text-sm text-on-surface-variant">Room name (optional)<input id="cr-room" maxlength="50" class="bg-[#11151D] border border-[#2A3140] rounded-xl px-3 py-2 text-white" placeholder="Friday movie night"/></label>
+    <label class="flex flex-col gap-1 text-sm text-on-surface-variant">Where is everyone watching from?<select id="cr-country" class="bg-[#11151D] border border-[#2A3140] rounded-xl px-3 py-2 text-white">${PT.countryOptions(PT.getCountry())}</select><span class="text-xs text-outline">Streaming catalogues differ by country. Pick the one you all share.</span></label>
+    ${t ? "" : `<label class="flex flex-col gap-1 text-sm text-on-surface-variant">Or watch a free YouTube video together (optional)<input id="cr-yt" class="bg-[#11151D] border border-[#2A3140] rounded-xl px-3 py-2 text-white" placeholder="https://www.youtube.com/watch?v=…"/></label>`}
+    <label class="flex items-center gap-2 text-sm text-on-surface-variant"><input id="cr-priv" type="checkbox" class="rounded"/>Private room (not listed under Live Watch Parties)</label>
+    <p id="cr-err" class="text-sm text-error"></p>
+    <div class="flex justify-end gap-2"><button type="button" id="cr-x" class="px-4 py-2 rounded-xl border border-[#2A3140] text-on-surface-variant hover:text-white">Cancel</button><button id="cr-go" class="px-4 py-2 rounded-xl bg-primary text-[#0B0D12] font-bold">Create room</button></div></form>`);
+  m.querySelector("#cr-x").onclick = PT.closeModal;
+  m.querySelector("#cr").onsubmit = async (e) => {
+    e.preventDefault(); const go = m.querySelector("#cr-go"); go.disabled = true; m.querySelector("#cr-err").textContent = "";
+    PT.setName(m.querySelector("#cr-name").value); paintWho(); PT.setCountry(m.querySelector("#cr-country").value);
+    try {
+      const r = await PT.post("/api/rooms", { clientId: PT.clientId, clientName: PT.getName(), name: m.querySelector("#cr-room").value, titleId: t ? t.id : undefined, youtube: (m.querySelector("#cr-yt") || {}).value || undefined, private: m.querySelector("#cr-priv").checked, country: PT.getCountry() });
+      location.href = "/room.html?code=" + r.code;
+    } catch (err) { m.querySelector("#cr-err").textContent = err.message; go.disabled = false; }
+  };
+}
+$("#create").onclick = () => createRoomModal(null);
+
+$("#join").onsubmit = async (e) => {
+  e.preventDefault(); const code = $("#code").value.trim().toUpperCase(); if (code.length !== 6) return PT.toast("Room codes have 6 characters.");
+  try { await PT.api("/api/rooms/" + code); needName(() => (location.href = "/room.html?code=" + code)); } catch (err) { PT.toast(err.message); }
+};
+
+async function loadRooms() {
+  try {
+    const { rooms } = await PT.api("/api/rooms");
+    $("#rooms-count").textContent = `${rooms.length} open room${rooms.length === 1 ? "" : "s"}`;
+    $("#rooms-grid").innerHTML = rooms.length ? rooms.map((r) => `<div class="rounded-2xl bg-[#181E29] border border-[#2A3140] hover:border-primary transition-all p-4 flex flex-col justify-between gap-3">
+      <div class="flex gap-3 min-w-0"><div class="w-16 aspect-[2/3] rounded-lg overflow-hidden shrink-0 border border-[#2A3140] ${r.youtube ? "flex items-center justify-center bg-surface-container-high" : ""}">${r.title ? PT.poster(r.title, true) : PT.ic(r.youtube ? "smart_display" : "movie", "text-secondary")}</div>
+      <div class="min-w-0"><h4 class="font-headline-sm text-[16px] font-semibold text-white truncate">${esc(r.name)}</h4><p class="font-body-sm text-on-surface-variant truncate">${r.title ? esc(r.title.title) + (r.title.year ? " (" + r.title.year + ")" : "") : r.youtube ? "YouTube video" : "Choosing a title…"}</p><p class="font-body-sm text-[11px] text-outline mt-1">Host: ${esc(r.hostName)} · ${r.watching} in room</p></div></div>
+      <button data-join="${r.code}" class="px-3 py-2 rounded-xl bg-primary/10 hover:bg-primary text-primary hover:text-[#0B0D12] font-label-action transition-all flex items-center justify-center gap-1"><span>Join Party</span>${PT.ic("login", "!text-[14px]")}</button></div>`).join("")
+      : `<p class="text-on-surface-variant md:col-span-3">No open rooms right now. Create one and share the link.</p>`;
+  } catch (e) { /* keep last view */ }
+}
+$("#rooms-grid").onclick = (e) => { const b = e.target.closest("[data-join]"); if (b) needName(() => (location.href = "/room.html?code=" + b.dataset.join)); };
+
+/* ---------- start ---------- */
+(async function () {
+  paintWho(); tabsHtml();
+  try { S.cfg = await PT.api("/api/config"); } catch (e) {}
+  if (S.cfg.provider === "omdb") $("#credits").textContent = "Movie data and artwork come from OMDb. Where-to-watch checks need a TMDB key on the server. Streaming catalogues change often.";
+  load(true); loadRooms(); setInterval(loadRooms, 10000);
+})();
+</script>
+</body></html>
