@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "description": "Watch movies together: search every title, check everyone has the platform, live rooms, chat and voice.",
   "private": true,
-  "main": "server/server.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node server/server.js",
-    "test": "node test/smoke.js"
+    "start": "node server.js",
+    "test": "node smoke.js"
   },
-  "engines": { "node": ">=18" }
+  "engines": {
+    "node": ">=18"
+  }
 }
