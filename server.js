@@ -15,7 +15,7 @@ const providers = require("./providers");
 const rooms = require("./rooms");
 const store = require("./store");
 
-const PUBLIC = path.join(__dirname, "..", "public");
+const PUBLIC = __dirname;
 const MIME = {
   ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8",
   ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".ico": "image/x-icon"
