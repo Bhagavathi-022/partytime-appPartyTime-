@@ -1,0 +1,12 @@
+{
+  "name": "partytime",
+  "version": "1.0.0",
+  "description": "Watch movies together: search every title, check everyone has the platform, live rooms, chat and voice.",
+  "private": true,
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "test": "node test/smoke.js"
+  },
+  "engines": { "node": ">=18" }
+}
